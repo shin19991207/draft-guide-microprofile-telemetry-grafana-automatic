@@ -49,7 +49,7 @@ image::architecture_diagram.png[Application architecture,align="center"]
 
 Before you begin, ensure that Docker is installed and running on your system. For installation instructions, see the https://docs.docker.com/get-started/get-docker/[official Docker documentation^].
 
-The https://hub.docker.com/r/grafana/otel-lgtm[Grafana OTel LGTM Docker image^] provides an all-in-one setup that includes an OpenTelemetry Collector, which receives telemetry data and forwards it to Tempo for traces, Prometheus for metrics, and Loki for logs. The collected data can be visualized by Grafana.
+The https://hub.docker.com/r/grafana/otel-lgtm[Grafana OTel LGTM Docker image^] provides an all-in-one setup with an OpenTelemetry Collector that receives telemetry data and forwards it to Tempo for traces, Prometheus for metrics, and Loki for logs. Grafana can be used to visualize the collected data.
 
 Start the Grafana OTel LGTM stack by running the following Docker command:
 
@@ -58,7 +58,7 @@ Start the Grafana OTel LGTM stack by running the following Docker command:
 docker run -p 3000:3000 -p 4317:4317 -p 4318:4318 --rm -ti grafana/otel-lgtm
 ----
 
-Once the container is up and running, you can access the Grafana dashboard at the http://localhost:3000 URL.
+When the container is up and running, you can access the Grafana dashboard at the http://localhost:3000 URL.
 
 // =================================================================================================
 // Getting started
@@ -72,17 +72,59 @@ The `finish` directory in the root of this guide contains the finished applicati
 
 To try out the application, go to the `finish` directory and run the following Maven goal to build the `system` service and deploy it to Open Liberty:
 
-[role="command"]
-----
-mvn -pl system liberty:run
-----
+include::{common-includes}/os-tabs.adoc[]
+
+[.tab_content.windows_section]
+--
+[role='command']
+```
+mvnw.cmd -pl system liberty:run
+```
+--
+
+[.tab_content.mac_section]
+--
+[role='command']
+```
+./mvnw -pl system liberty:run
+```
+--
+
+[.tab_content.linux_section]
+--
+[role='command']
+```
+./mvnw -pl system liberty:run
+```
+--
 
 Next, open another command-line session in the `finish` directory and run the following command to start the `inventory` service:
 
-[role="command"]
-----
-mvn -pl inventory liberty:run
-----
+include::{common-includes}/os-tabs.adoc[]
+
+[.tab_content.windows_section]
+--
+[role='command']
+```
+mvnw.cmd -pl inventory liberty:run
+```
+--
+
+[.tab_content.mac_section]
+--
+[role='command']
+```
+./mvnw -pl inventory liberty:run
+```
+--
+
+[.tab_content.linux_section]
+--
+[role='command']
+```
+./mvnw -pl inventory liberty:run
+```
+--
 
 After you see the following message in both command-line sessions, both of your services are ready:
 
@@ -91,7 +133,7 @@ After you see the following message in both command-line sessions, both of your 
 The defaultServer server is ready to run a smarter planet.
 ----
 
-Once both services are running, visit the following endpoints:
+When both services are running, visit the following endpoints:
 
 * The http://localhost:9080/system/properties URL returns system properties from the `system` service.
 
@@ -138,11 +180,34 @@ image::log_logger_ok.png[Example of log detail,align="center"]
 
 After you're finished reviewing the application, stop the Open Liberty instances by pressing `CTRL+C` in the command-line sessions where you ran the `system` and `inventory` services. Alternatively, you can run the following goals from the `finish` directory in another command-line session:
 
-[role="command"]
-----
-mvn -pl system liberty:stop
-mvn -pl inventory liberty:stop
-----
+include::{common-includes}/os-tabs.adoc[]
+
+[.tab_content.windows_section]
+--
+[role='command']
+```
+mvnw.cmd -pl system liberty:stop
+mvnw.cmd -pl inventory liberty:stop
+```
+--
+
+[.tab_content.mac_section]
+--
+[role='command']
+```
+./mvnw -pl system liberty:stop
+./mvnw -pl inventory liberty:stop
+```
+--
+
+[.tab_content.linux_section]
+--
+[role='command']
+```
+./mvnw -pl system liberty:stop
+./mvnw -pl inventory liberty:stop
+```
+--
 
 // =================================================================================================
 // Enabling automatic telemetry collection
@@ -199,9 +264,9 @@ include::finish/inventory/src/main/liberty/config/bootstrap.properties[]
 
 Set the [hotspot=disabled file=2]`otel.sdk.disabled=false` property in the https://openliberty.io/docs/latest/reference/bootstrap-properties.html[bootstrap properties^] file to enable telemetry collection. Because this file applies configuration at the runtime level, it allows both runtime and application telemetry to be collected. If you instead configure this property at the application level, runtime telemetry will not be collected. See the https://openliberty.io/docs/latest/microprofile-telemetry.html#global[MicroProfile Telemetry configuration documentation^] for details.
 
-The [hotspot=service file=2]`otel.service.name` property sets the service name to `inventory`, which helps identify the source of the telemetry data in monitoring tools like Grafana.
+The [hotspot=service file=2]`otel.service.name` property sets the service name to `inventory`, helping identify the source of the telemetry data in monitoring tools like Grafana.
 
-The Grafana OTel LGTM stack receives telemetry data via the OTLP protocol, which is the default for OpenTelemetry. Therefore, no additional exporter configuration is needed.
+The Grafana OTel LGTM stack receives telemetry data using the OTLP protocol, the default for OpenTelemetry. Therefore, no additional exporter configuration is needed.
 
 [role="code_command hotspot file=3", subs="quotes"]
 ----
@@ -225,17 +290,59 @@ Now, start the services to begin collecting telemetry data.
 
 When you run Open Liberty in https://openliberty.io/docs/latest/development-mode.html[dev mode^], dev mode listens for file changes and automatically recompiles and deploys your updates whenever you save a new change. Run the following command to start the `system` service in dev mode:
 
-[role="command"]
-----
-mvn -pl system liberty:dev
-----
+include::{common-includes}/os-tabs.adoc[]
+
+[.tab_content.windows_section]
+--
+[role='command']
+```
+mvnw.cmd -pl system liberty:dev
+```
+--
+
+[.tab_content.mac_section]
+--
+[role='command']
+```
+./mvnw -pl system liberty:dev
+```
+--
+
+[.tab_content.linux_section]
+--
+[role='command']
+```
+./mvnw -pl system liberty:dev
+```
+--
 
 Open another command-line session and run the following command to start the `inventory` service in dev mode:
 
-[role="command"]
-----
-mvn -pl inventory liberty:dev
-----
+include::{common-includes}/os-tabs.adoc[]
+
+[.tab_content.windows_section]
+--
+[role='command']
+```
+mvnw.cmd -pl inventory liberty:dev
+```
+--
+
+[.tab_content.mac_section]
+--
+[role='command']
+```
+./mvnw -pl inventory liberty:dev
+```
+--
+
+[.tab_content.linux_section]
+--
+[role='command']
+```
+./mvnw -pl inventory liberty:dev
+```
+--
 
 After you see the following message, your Liberty instance is ready in dev mode:
 
@@ -247,7 +354,7 @@ After you see the following message, your Liberty instance is ready in dev mode:
 
 Dev mode holds your command-line session to listen for file changes. Open another command-line session to continue, or open the project in your editor.
 
-Once both services are running, visit the http://localhost:9081/inventory/systems/localhost URL to trigger the collection of automatic telemetry instrumentation. By default, OpenTelemetry generates trace spans for incoming HTTP requests to JAX-RS and REST endpoints, collects runtime and application metrics such as HTTP request durations and JVM performance, and captures message logs written by the application or Liberty runtime at the `INFO` level or higher.
+When both services are running, visit the http://localhost:9081/inventory/systems/localhost URL to trigger the collection of automatic telemetry instrumentation. By default, OpenTelemetry generates trace spans for incoming HTTP requests to JAX-RS and REST endpoints, collects runtime and application metrics such as HTTP request durations and JVM performance, and captures message logs written by the application or Liberty runtime at the `INFO` level or higher.
 
 To explore the automatic telemetry data, open the Grafana dashboard at the http://localhost:3000 URL.
 
@@ -367,7 +474,7 @@ include::finish/inventory/src/main/liberty/config/server.xml[]
 
 The OpenTelemetry APIs are exposed as third-party APIs in Open Liberty. To make them accessible to your application, add the [hotspot=thirdParty file=0]`+third-party` value to the [hotspot=thirdParty file=0]`apiTypeVisibility` attribute of the [hotspot=thirdParty file=0]`classLoader` element in the `webApplication` configuration. This configuration adds `third-party` to the default list of API package types that are supported.
 
-Once access to the OpenTelemetry API is configured, you can manually instrument your application to define custom metrics.
+After configuring access to the OpenTelemetry API, you can manually instrument your application to define custom metrics.
 
 [role="code_command hotspot file=1", subs="quotes"]
 ----
@@ -381,13 +488,13 @@ InventoryManager.java
 include::staging/InventoryManager.java[]
 ----
 
-Inject the OpenTelemetry [hotspot=meter file=1]`Meter` interface into the [hotspot file=1]`InventoryManager` class to define and collect application-specific metrics. This interface provides access to the OpenTelemetry metrics API, which includes instruments such as counters, histograms, and gauges to monitor application behavior and performance.
+Inject the OpenTelemetry [hotspot=meter file=1]`Meter` interface into the [hotspot file=1]`InventoryManager` class to define and collect application-specific metrics. This interface provides access to the OpenTelemetry metrics API, including instruments such as counters, histograms, and gauges to monitor application behavior and performance.
 
 Use the [hotspot=counterBuilder file=1]`Meter.counterBuilder()` method to define a counter instrument named [hotspot=inventoryListCount file=1]`inventory.list.count`. This metric tracks how many times the inventory list is requested. Every time the [hotspot=list file=1]`list()` method is called, the counter is incremented by one to reflect a new request to view the inventory.
 
 Use the [hotspot=histogramBuilder file=1]`Meter.histogramBuilder()` method to define a histogram instrument named [hotspot=inventoryAddDuration file=1]`inventory.add.duration`. This metric measures the time it takes to add a system to the inventory. The [hotspot=addStart file=1]`start` time is recorded when the [hotspot=add file=1]`add()` method begins, and the [hotspot=addDuration file=1]`duration` is calculated and recorded when the method finishes.
 
-Use the [hotspot=gaugeBuilder file=1]`Meter.gaugeBuilder()` method to define a gauge named [hotspot=inventorySize file=1]`inventory.size`, which records the number of systems currently in the inventory. The [hotspot=buildWithCallback file=1]`buildWithCallback()` method allows the value to be updated dynamically, ensuring that the metric always reflects the current size of the list.
+Use the [hotspot=gaugeBuilder file=1]`Meter.gaugeBuilder()` method to define a gauge named [hotspot=inventorySize file=1]`inventory.size`, recording the number of systems currently in the inventory. The [hotspot=buildWithCallback file=1]`buildWithCallback()` method allows the value to be updated dynamically, ensuring that the metric always reflects the current size of the list.
 
 When naming metrics, follow OpenTelemetry's https://opentelemetry.io/docs/specs/semconv/general/metrics/[general naming guidelines] to ensure compatibility. 
 
@@ -480,7 +587,7 @@ Inject the OpenTelemetry [hotspot=tracer file=0]`Tracer` interface into the [hot
 
 Each span must be completed by calling [hotspot=end file=0]`end()`. To ensure the span is always ended, the call is placed inside a [hotspot=finally file=0]`finally` block.
 
-The [hotspot=scope file=0]`makeCurrent()` method sets the span as the current span. This call returns a `Scope`, which should be closed to restore the previous span. A [hotspot=try file=0]`try-with-resources` block is used to close the scope automatically.
+The [hotspot=scope file=0]`makeCurrent()` method sets the span as the current span. This call returns a `Scope` that must be closed to restore the previous span. A [hotspot=try file=0]`try-with-resources` block is used to close the scope automatically.  
 
 Use the [hotspot=addEvent1 hotspot=addEvent2 file=0]`addEvent()` method to add events to the span. In this example, the code adds one event when the properties are received and another when the request fails.
 
