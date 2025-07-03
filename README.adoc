@@ -36,7 +36,19 @@ Learn how to enable and customize the collection of traces, metrics, and logs fr
 
 In a microservices architecture, it can be difficult to understand how services interact, where latency occurs, and what causes failures. Without visibility across service boundaries, diagnosing issues and tuning performance can become slow and error-prone.
 
-Observability helps address these challenges by capturing telemetry data such as logs, metrics, and traces. https://opentelemetry.io/[OpenTelemetry^] is an open-source framework that provides APIs, SDKs, and tools for generating and managing this data. MicroProfile Telemetry adopts OpenTelemetry to enable both automatic and manual instrumentation in MicroProfile applications. Traces and metrics, along with runtime and application logs, can be exported in a standardized format through an OpenTelemetry Collector to any compatible backend, such as the https://github.com/grafana/docker-otel-lgtm/?tab=readme-ov-file#docker-otel-lgtm[Grafana OTel LGTM Stack^].
+Observability helps address these challenges by capturing telemetry data such as logs, metrics, and traces. https://opentelemetry.io/[OpenTelemetry^] is an open-source framework that provides APIs, SDKs, and tools for generating and managing this data. MicroProfile Telemetry adopts OpenTelemetry to enable both automatic and manual instrumentation in MicroProfile applications. Traces and metrics, along with runtime and application logs, can be exported in a standardized format through an OpenTelemetry Collector to any compatible backend.
+
+In this guide, you'll use the https://github.com/grafana/docker-otel-lgtm/?tab=readme-ov-file#docker-otel-lgtm[Grafana Docker OpenTelemetry LGTM^] image (`grafana/otel-lgtm`), an open source Docker image that provides a preconfigured observability backend for OpenTelemetry, based on the https://grafana.com/about/grafana-stack/[Grafana stack^]. This setup includes:
+
+* https://opentelemetry.io/docs/collector/[OpenTelemetry Collector^]: a gateway for receiving telemetry data from applications
+
+* https://github.com/prometheus/prometheus[Prometheus^]: a time-series database for storing numerical metrics, like request rates and memory usage
+
+* https://github.com/grafana/loki/[Loki^]: a log aggregation system for collecting and querying logs
+
+* https://github.com/grafana/tempo/[Tempo^]: a distributed tracing backend that stores traces, which represent the path and timing of a request as it flows across services
+    
+* https://github.com/grafana/grafana[Grafana^]: a dashboard tool that brings together logs, metrics, and traces for visualization and analysis
 
 The diagram shows multiple services, but for simplicity, this guide configures only the `system` and `inventory` services to demonstrate observability in a distributed environment. In this guide, you'll learn how to enable the automatic collection of logs, metrics, and traces. You'll also learn how to enhance observability by capturing logs in a standardized way and adding custom spans and metrics.
 
@@ -49,16 +61,21 @@ image::architecture_diagram.png[Application architecture,align="center"]
 
 Before you begin, ensure that Docker is installed and running on your system. For installation instructions, see the https://docs.docker.com/get-started/get-docker/[official Docker documentation^].
 
-The https://hub.docker.com/r/grafana/otel-lgtm[Grafana OTel LGTM Docker image^] provides an all-in-one setup with an OpenTelemetry Collector that receives telemetry data and forwards it to Tempo for traces, Prometheus for metrics, and Loki for logs. Grafana can be used to visualize the collected data.
-
-Start the Grafana OTel LGTM stack by running the following Docker command:
+Start a container from the https://hub.docker.com/r/grafana/otel-lgtm[`grafana/otel-lgtm`^] Docker image by running the following command:
 
 [role="command"]
 ----
 docker run -p 3000:3000 -p 4317:4317 -p 4318:4318 --rm -ti grafana/otel-lgtm
 ----
 
-When the container is up and running, you can access the Grafana dashboard at the http://localhost:3000 URL.
+It may take a minute for the container to start. After you see the following message, your observability stack is ready:
+
+[role="no_copy"]
+----
+The OpenTelemetry collector and the Grafana LGTM stack are up and running.
+----
+
+Once the container is running, you can access the Grafana dashboard at the http://localhost:3000 URL.
 
 // =================================================================================================
 // Getting started
@@ -137,9 +154,9 @@ When both services are running, visit the following endpoints:
 
 * The http://localhost:9080/system/properties URL returns system properties from the `system` service.
 
-* The http://localhost:9081/inventory/systems URL displays the current contents of the inventory.
-
 * The http://localhost:9081/inventory/systems/localhost URL adds your local system properties to the inventory.
+
+* The http://localhost:9081/inventory/systems URL displays the current contents of the inventory.
 
 To explore the telemetry data, open the Grafana dashboard at the http://localhost:3000 URL and follow these steps:
 
@@ -151,11 +168,18 @@ To explore the telemetry data, open the Grafana dashboard at the http://localhos
 
 3. Set **Query type** to `Search`.
 
-4. Click **Run query** to list recent traces.
+4. Click **Run query** at the top-right corner to list recent traces.
 
-5. Click a trace ID to inspect the spans and details from the `inventory` or `system` services.
+5. Click a trace ID with the `GET /inventory/systems/{hostname}` name. You will see the following result:
 
-image::inventory_service_spans.png[Get /localhost traces for the inventory service,align="center"]
+   image::inventory_service_spans.png[`GET /inventory/systems/{hostname}` spans from the inventory service,align="center"]
+
+   The trace has five spans, four from the `inventory` service and one from the `system` service. Under **Service & Operation**, you see the spans in this trace. You can inspect each span by clicking it to reveal more detailed information, such as the times that a request was received and a response was sent.
+
+6. Expand the **Node graph** to see the relationship of spans between the `inventory` and `system` microservices.
+   
+   image::inventory_service_node_graph.png[`GET /inventory/systems/{hostname}` node graph from the inventory service,align="center"]
+
 {empty} +
 
 **View metrics with Prometheus:**
