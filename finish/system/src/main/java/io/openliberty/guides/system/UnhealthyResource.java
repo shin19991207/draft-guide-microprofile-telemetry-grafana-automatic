@@ -11,25 +11,16 @@
 // end::copyright[]
 package io.openliberty.guides.system;
 
-import java.util.Properties;
-import java.util.logging.Logger;
-
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 
-@Path("properties")
-public class SystemResource {
+import io.openliberty.guides.system.health.SystemReadinessCheck;
 
-    private static final Logger logger = Logger.getLogger(SystemResource.class.getName());
-
+@Path("unhealthy")
+public class UnhealthyResource {
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Properties getProperties() {
-        // tag::log[]
-        logger.info("Received request to fetch system properties.");
-        // end::log[]
-        return System.getProperties();
+    public String unhealthy() {
+        SystemReadinessCheck.setUnhealthy();
+        return "System is now unhealthy...\n";
     }
 }

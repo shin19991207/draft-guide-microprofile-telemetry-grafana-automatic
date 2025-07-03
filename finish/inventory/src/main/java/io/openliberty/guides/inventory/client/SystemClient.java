@@ -30,43 +30,22 @@ public class SystemClient implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(SystemClient.class.getName());
     // end::getLogger[]
 
-    private final String SYSTEM_PROPERTIES = "/system/properties";
-    private final String PROTOCOL = "http";
+    private static final String PROTOCOL = "http";
+    private static final String SYSTEM_PROPERTIES = "/system/properties";
+    private static final String SYSTEM_HEALTH = "/health";
 
-    private String url;
+    private String hostname;
+    private int port;
     private Client client;
-    private Builder clientBuilder;
 
     public void init(String hostname, int port) {
-        this.initHelper(hostname, port);
+        this.hostname = hostname;
+        this.port = port;
     }
 
-    private void initHelper(String hostname, int port) {
-        this.url = buildUrl(PROTOCOL, hostname, port, SYSTEM_PROPERTIES);
-        this.clientBuilder = buildClientBuilder(this.url);
-    }
-
-    public Properties getProperties() {
-        return getPropertiesHelper(this.clientBuilder);
-    }
-
-    // tag::doc[]
-    /**
-     * Builds the URI string to the system service for a particular host.
-     * @param protocol
-     *          - http or https.
-     * @param host
-     *          - name of host.
-     * @param port
-     *          - port number.
-     * @param path
-     *          - Note that the path needs to start with a slash!!!
-     * @return String representation of the URI to the system properties service.
-     */
-    // end::doc[]
-    protected String buildUrl(String protocol, String host, int port, String path) {
+    private String buildUrl(String path) {
         try {
-            URI uri = new URI(protocol, null, host, port, path, null, null);
+            URI uri = new URI(PROTOCOL, null, hostname, port, path, null, null);
             return uri.toString();
         } catch (Exception e) {
             // tag::log1[]
@@ -77,7 +56,7 @@ public class SystemClient implements AutoCloseable {
         }
     }
 
-    protected Builder buildClientBuilder(String urlString) {
+    private Builder buildClientBuilder(String urlString) {
         try {
             this.client = ClientBuilder.newClient();
             Builder builder = client.target(urlString).request();
@@ -91,7 +70,10 @@ public class SystemClient implements AutoCloseable {
         }
     }
 
-    protected Properties getPropertiesHelper(Builder builder) {
+    public Properties getProperties() {
+        String url = buildUrl(SYSTEM_PROPERTIES);
+        Builder builder = buildClientBuilder(url);
+        if (builder == null) return null;
         try {
             Response response = builder.get();
             // tag::log3[]
@@ -111,23 +93,37 @@ public class SystemClient implements AutoCloseable {
             logger.log(Level.SEVERE,
                 "Runtime exception while invoking system service", e);
             // end::log5[]
-        } catch (Exception e) {
-            // tag::log6[]
-            logger.log(Level.SEVERE,
-                "Unexpected exception while processing system service request", e);
-            // end::log6[]
         }
         return null;
+    }
+
+    public String getHealth() {
+        String url = buildUrl(SYSTEM_HEALTH);
+        Builder builder = buildClientBuilder(url);
+        if (builder == null) return "ERROR";
+        try {
+            Response response = builder.get();
+            int statusCode = response.getStatus();
+            if (statusCode == Status.OK.getStatusCode()) {
+                return "UP";
+            } else if (statusCode == Status.SERVICE_UNAVAILABLE.getStatusCode()) {
+                return "DOWN";
+            } else {
+                return "ERROR";
+            }
+        } catch (Exception e) {
+            // tag::log5[]
+            logger.log(Level.SEVERE,
+                "Exception while invoking system health endpoint", e);
+            // end::log5[]
+        }
+        return "ERROR";
     }
 
     @Override
     public void close() {
         if (client != null) {
             client.close();
-            // tag::log7[]
-            logger.log(Level.INFO,
-                "SystemClient HTTP client closed.");
-            // end::log7[]
         }
     }
 }

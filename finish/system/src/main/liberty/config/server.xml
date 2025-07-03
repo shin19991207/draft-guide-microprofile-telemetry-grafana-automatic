@@ -9,6 +9,7 @@
         <feature>jsonb</feature>
         <feature>jsonp</feature>
         <feature>restfulWS</feature>
+        <feature>mpHealth</feature>
         <!-- tag::mpTelemetry[] -->
         <feature>mpTelemetry</feature>
         <!-- end::mpTelemetry[] -->
