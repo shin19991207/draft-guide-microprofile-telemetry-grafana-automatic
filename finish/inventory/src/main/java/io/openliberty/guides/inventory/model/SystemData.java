@@ -17,10 +17,12 @@ public class SystemData {
 
     private final String hostname;
     private final Properties properties;
+    private String health;
 
-    public SystemData(String hostname, Properties properties) {
+    public SystemData(String hostname, Properties properties, String health) {
         this.hostname = hostname;
         this.properties = properties;
+        this.health = health;
     }
 
     public String getHostname() {
@@ -29,6 +31,14 @@ public class SystemData {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    public String getHealth() {
+        return health;
+    }
+
+    public void setHealth(String health) {
+        this.health = health;
     }
 
     @Override

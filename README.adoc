@@ -172,13 +172,19 @@ To explore the telemetry data, open the Grafana dashboard at the http://localhos
 
 5. Click a trace ID with the `GET /inventory/systems/{hostname}` name. You will see the following result:
 
-   image::inventory_service_spans.png[`GET /inventory/systems/{hostname}` spans from the inventory service,align="center"]
++
+image::inventory_service_spans.png[`GET /inventory/systems/{hostname}` spans from the inventory service,align="center"]
 
-   The trace has five spans, four from the `inventory` service and one from the `system` service. Under **Service & Operation**, you see the spans in this trace. You can inspect each span by clicking it to reveal more detailed information, such as the times that a request was received and a response was sent.
++
+The trace has five spans, four from the `inventory` service and one from the `system` service. Under **Service & Operation**, you see the spans in this trace. You can inspect each span by clicking it to reveal more detailed information, such as the times that a request was received and a response was sent.
 
 6. Expand the **Node graph** to see the relationship of spans between the `inventory` and `system` microservices.
-   
-   image::inventory_service_node_graph.png[`GET /inventory/systems/{hostname}` node graph from the inventory service,align="center"]
+
++
+image::inventory_service_node_graph.png[`GET /inventory/systems/{hostname}` node graph from the inventory service,align="center"]
+
++
+This graph helps visualize the request flow across services and identify any latency hotspots or bottlenecks.
 
 {empty} +
 
@@ -186,9 +192,11 @@ To explore the telemetry data, open the Grafana dashboard at the http://localhos
 
 1. Open the **Drilldown -> Metrics** view from the left-hand menu. This view shows a query-less experience for browsing the available metrics collected by Prometheus.
 
++
+image::metrics_overview.png[Metrics overview,align="center"]
+
 2. For a more detailed view of any metric, click the **Select** button next to its graph.
 
-image::metrics_overview.png[Metrics overview,align="center"]
 {empty} +
 
 **View logs with Loki:**
@@ -199,7 +207,9 @@ image::metrics_overview.png[Metrics overview,align="center"]
 
 3. Expand a log entry to view the full message along with its trace context.
 
++
 image::log_logger_ok.png[Example of log detail,align="center"]
+
 {empty} +
 
 After you're finished reviewing the application, stop the Open Liberty instances by pressing `CTRL+C` in the command-line sessions where you ran the `system` and `inventory` services. Alternatively, you can run the following goals from the `finish` directory in another command-line session:
@@ -420,12 +430,12 @@ include::start/inventory/src/main/java/io/openliberty/guides/inventory/client/Sy
 
 Currently, the [hotspot file=0]`SystemClient` class logs messages using [hotspot=out3 hotspot=out4 hotspot=out7 file=0]`System.out` and [hotspot=out1 hotspot=out2 hotspot=out5 hotspot=out6 file=0]`System.err`.
 
-To observe a basic standard output log, point your browser to the http://localhost:9081/inventory/systems/localhost URL and open the Grafana dashboard at the http://localhost:3000/ URL. In the **Explore** view, select the **Loki** data source and filter by `service_name = inventory`. Expand the log entry for `Received response with status: 200`. The message appears as an `info`-level log, and the `io_openliberty_module` field is set to `SystemOut`.
+To observe a basic standard output log, point your browser to the http://localhost:9081/inventory/systems/localhost URL and open the Grafana dashboard at the http://localhost:3000/ URL. In the **Explore** view, select the **Loki** data source and filter by `service_name = inventory`. Expand the log entry for `Received response with status: 200`. The message appears as an `info` detected level log. The `io_openliberty_module` field is set to `SystemOut`.
 
 image::log_system_out_println_ok.png[Log by using the System.out.println method,align="center"]
 {empty} +
 
-Now access the http://localhost:9081/inventory/systems/unknown URL to simulate an exception. This request targets a non-existent host and triggers a `RuntimeException`. Re-run the same Grafana query. The resulting log appears with a `warn` level and the module set to `SystemErr`. The stack trace is embedded directly in the log body, making it harder to parse programmatically.
+Now access the http://localhost:9081/inventory/systems/unknown URL to simulate an exception. This request targets a non-existent host and triggers a `RuntimeException`. Re-run the same Grafana query. The resulting log appears with a `warn` detected level. The `io_openliberty_module` field is set to `SystemErr`. The stack trace is embedded directly in the log body, making it harder to parse programmatically.
 
 image::log_system_out_println_exception.png[Log by using the System.out.println method,align="center"]
 {empty} +
@@ -454,7 +464,7 @@ Return to the http://localhost:9081/inventory/systems/localhost URL and re-run t
 
 image::log_logger_ok.png[Log by using the java.util.logging API,align="center"]
 
-Access the http://localhost:9081/inventory/systems/unknown URL again to generate an exception. The resulting log now includes the defined severity level (`error`), the structured `exception_stacktrace`, and the `exception_type` field such as `jakarta.ws.rs.ProcessingException`.
+Access the http://localhost:9081/inventory/systems/unknown URL again to generate an exception and re-run the Loki query in Grafana. The resulting log indicates the `error` severity by the `detected_level` field, the structured exception stack by the `exception_stacktrace` field, and the `jakarta.ws.rs.ProcessingException` exception by the `exception_type` field.
 
 image::log_logger_exception.png[Log by using the java.util.logging API,align="center"]
 {empty} +
@@ -471,9 +481,13 @@ SystemResource.java
 include::finish/system/src/main/java/io/openliberty/guides/system/SystemResource.java[]
 ----
 
-Update the [hotspot file=2]`SystemResource` class in the `system` service to use the same logging approach. This ensures consistent logging across services. To view logs from both services together, open the **Drilldown -> Logs** view in Grafana. You can now analyze logs across distributed systems in a single interface.
+Update the [hotspot file=2]`SystemResource` class in the `system` service to use a simpler logging approach by using the [hotspot=log file=2]`info()` method. This ensures consistent logging across services.
 
-By default, OpenTelemetry collects only message logs. For details on how to include additional sources, see https://openliberty.io/docs/latest/microprofile-telemetry.html#logs[Collect logs from a specified source^].
+Return to the http://localhost:9081/inventory/systems/localhost URL and run the Loki query filter by `service_name = system` for this time. You see the log `Received request to fetch system properties.`
+
+To view logs from both services together, open the **Drilldown -> Logs** view in Grafana. You can now analyze logs across distributed systems in a single interface.
+
+By default, OpenTelemetry collects only message logs. For details on how to include additional sources, see https://openliberty.io/docs/latest/reference/feature/mpTelemetry-2.0.html#logs[Collect logs from a specified source^].
 
 // =================================================================================================
 // Enabling explicit metrics
@@ -524,7 +538,7 @@ When naming metrics, follow OpenTelemetry's https://opentelemetry.io/docs/specs/
 
 To learn more about how to define and use metrics in your application, refer to the https://opentelemetry.io/docs/languages/java/api/#meter[Meter operations^] for a full list of available metrics, or the https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api/latest/io/opentelemetry/api/metrics/package-summary.html[OpenTelemetry metrics API reference^].
 
-Now, to view the custom metrics, first trigger activity in the application by visiting the following URLs in your browser:
+Now, to view the custom metrics, first trigger some activity in the application by visiting the following URLs in your browser:
 
 * Visit the http://localhost:9081/inventory/systems/localhost URL to add your local system properties to the inventory.
 
@@ -532,14 +546,18 @@ Now, to view the custom metrics, first trigger activity in the application by vi
 
 * Visit the http://localhost:9081/inventory/systems URL to display the current contents of the inventory. After the previous steps, the inventory should show two entries.
 
-Next, open the Grafana dashboard at the http://localhost:3000 URL. From the left menu, navigate to **Drilldown -> Metrics**, then enter `inventory` in the **Search metrics** field to explore the metrics exposed by the service. You will see a result similar to the following:
+Next, open the Grafana dashboard at the http://localhost:3000 URL. From the left menu, navigate to **Drilldown -> Metrics**, then enter `inventory` in the **Search metrics** field to explore the metrics exposed by the service. In the upper right corner of the Grafana dashboard, click **Set auto refresh interval** and choose **30s** for real-time updates.
+
+Note that OpenTelemetry metrics are sent every 60 seconds by default. After triggering activity, it may take up to a minute for your custom metrics to appear in Grafana. If you don't see the metrics immediately, wait for a short period for the dashboard to refresh.
+
+You will see a result similar to the following:
 
 image::inventory_custom_metrics.png[Inventory custom metrics,align="center"]
 {empty} +
 
-Note the difference between the metric name you define and the name you see in Grafana. For details on how OpenTelemetry metrics are transformed when exported to Prometheus, see the https://opentelemetry.io/docs/specs/otel/compatibility/prometheus_and_openmetrics/#otlp-metric-points-to-prometheus[OTLP Metric points to Prometheus^] section of the OpenTelemetry specification.
+Note the difference between the metric name you define and the name displayed in Grafana. For details on how OpenTelemetry metrics are transformed when exported to Prometheus, see the https://opentelemetry.io/docs/specs/otel/compatibility/prometheus_and_openmetrics/#otlp-metric-points-to-prometheus[OTLP Metric points to Prometheus^] section of the OpenTelemetry specification.
 
-Try accessing the endpoints multiple times and refreshing the Grafana dashboard to observe how the metrics update in real time.
+Try accessing the endpoints multiple times and refreshing the Grafana dashboard to see how the metrics update in real time.
 
 // =================================================================================================
 // Enabling explicit traces
@@ -622,7 +640,7 @@ To see these spans and events, visit the http://localhost:9081/inventory/systems
 image::inventory_service_spans.png[Get traces for the inventory service,align="center"]
 {empty} +
 
-To test a failure case, go to the http://localhost:9081/inventory/systems/unknown URL and run the same trace query in Grafana. There are two spans from the `inventory` service. You'll see the `GettingProperties` span. Expan the `GettingProperties` span and its **Events** field. You can see the `Cannot get properties` event.
+To test a failure case, go to the http://localhost:9081/inventory/systems/unknown URL and run the same trace query in Grafana. There are two spans from the `inventory` service. You'll see the `GettingProperties` span. Expand the `GettingProperties` span and its **Events** field. You can see the `Cannot get properties` event.
 
 image::log_at_gettingProperties.png[Log at GettingProperties span,align="center"]
 {empty} +

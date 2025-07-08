@@ -17,6 +17,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -56,7 +57,7 @@ public class InventoryResource {
         try (Scope scope = getPropertiesSpan.makeCurrent()) {
         // end::scope[]
             // tag::getSystem[]
-            props = manager.get(hostname);
+            props = manager.getProperties(hostname);
             // end::getSystem[]
             if (props == null) {
                 // tag::addEvent1[]
@@ -83,6 +84,20 @@ public class InventoryResource {
 
     }
 
+    @POST
+    @Path("/health/refresh")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response refreshAllSystemsHealth() {
+        int updated = manager.refreshAllSystemsHealth();
+
+        if (updated == 0) {
+            return Response.ok("{\"ok\": \"No systems needed refresh\"}")
+                           .build();
+        }
+        return Response.ok("{\"ok\": \"Health refresh completed for all systems\", \"updated\": " + updated + "}")
+                       .build();
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public InventoryList listContents() {
@@ -95,10 +110,10 @@ public class InventoryResource {
         int cleared = manager.clear();
 
         if (cleared == 0) {
-            return Response.status(Response.Status.NOT_MODIFIED)
+            return Response.ok("{\"ok\": \"No systems to clear\"}")
                            .build();
         }
-        return Response.status(Response.Status.OK)
+        return Response.ok("{\"ok\": \"Cleared all systems\", \"cleared\": " + cleared + "}")
                        .build();
     }
 }
