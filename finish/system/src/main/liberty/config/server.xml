@@ -22,4 +22,6 @@
     <webApplication location="guide-microprofile-telemetry-system.war"
                     contextRoot="/" />
 
+    <logging consoleLogLevel="INFO" />
+
 </server>
