@@ -18,4 +18,6 @@
     <webApplication location="guide-microprofile-telemetry-inventory.war"
                     contextRoot="/" />
 
+    <logging consoleLogLevel="INFO" />
+
 </server>

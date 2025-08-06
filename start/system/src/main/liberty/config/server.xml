@@ -2,10 +2,12 @@
 
     <featureManager>
         <platform>jakartaee-10.0</platform>
+        <platform>microprofile-7.0</platform>
         <feature>cdi</feature>
         <feature>jsonb</feature>
         <feature>jsonp</feature>
         <feature>restfulWS</feature>
+        <feature>mpHealth</feature>
     </featureManager>
 
     <httpEndpoint httpPort="${http.port}"
@@ -14,5 +16,7 @@
 
     <webApplication location="guide-microprofile-telemetry-system.war"
                     contextRoot="/" />
+
+    <logging consoleLogLevel="INFO" />
 
 </server>

@@ -12,13 +12,12 @@
 package io.openliberty.guides.inventory;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.openliberty.guides.inventory.client.SystemClient;
@@ -32,7 +31,7 @@ public class InventoryManager {
     @ConfigProperty(name = "system.http.port")
     private int SYSTEM_PORT;
 
-    private List<SystemData> systems = Collections.synchronizedList(new ArrayList<>());
+    private Map<String, SystemData> systems = new ConcurrentHashMap<>();
 
     public Properties getProperties(String hostname) {
         try (SystemClient client = new SystemClient()) {
@@ -48,32 +47,28 @@ public class InventoryManager {
         }
     }
 
-    // tag::listMethod[]
     public InventoryList list() {
-        return new InventoryList(systems);
+        return new InventoryList(new ArrayList<>(systems.values()));
     }
-    // end::listMethod[]
 
-    // tag::addMethod[]
-    public void add(String host, Properties systemProps) {
+    public void addOrUpdate(String host, Properties systemProps, String health) {
+        SystemData system = systems.get(host);
         Properties props = new Properties();
         props.setProperty("os.name", systemProps.getProperty("os.name"));
         props.setProperty("user.name", systemProps.getProperty("user.name"));
-        String health = getHealth(host);
-        SystemData system = new SystemData(host, props, health);
-        if (!systems.contains(system)) {
-            systems.add(system);
+        if (system == null) {
+            systems.put(host, new SystemData(host, props, health));
+        } else {
+            system.setHealth(health);
         }
     }
-    // end::addMethod[]
 
     public int refreshAllSystemsHealth() {
         int updated = 0;
-        for (SystemData system : systems) {
+        for (SystemData system : systems.values()) {
             String hostname = system.getHostname();
-            String currentHealth = system.getHealth();
             String newHealth = getHealth(hostname);
-            if (!newHealth.equals(currentHealth)) {
+            if (!newHealth.equals(system.getHealth())) {
                 system.setHealth(newHealth);
                 updated++;
             }

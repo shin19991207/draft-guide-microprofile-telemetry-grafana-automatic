@@ -7,7 +7,7 @@
 // IBM Corporation
 //
 :page-layout: guide-multipane
-:projectid: microprofile-telemetry-automatic
+:projectid: microprofile-telemetry-grafana-automatic
 :page-duration: 45 minutes
 :page-releasedate: 2025-06-01
 :page-guide-category: microprofile
@@ -432,7 +432,7 @@ SystemClient.java
 include::start/inventory/src/main/java/io/openliberty/guides/inventory/client/SystemClient.java[]
 ----
 
-Currently, the [hotspot file=0]`SystemClient` class logs messages using [hotspot=out3 hotspot=out4 hotspot=out7 file=0]`System.out` and [hotspot=out1 hotspot=out2 hotspot=out5 hotspot=out6 file=0]`System.err`.
+Currently, the [hotspot file=0]`SystemClient` class logs messages using [hotspot=out3 hotspot=out4 hotspot=out9 file=0]`System.out` and [hotspot=out1 hotspot=out2 hotspot=out5 hotspot=out6 hotspot=out7 hotspot=out8 file=0]`System.err`.
 
 To observe a basic standard output log, point your browser to the http://localhost:9081/inventory/systems/localhost URL and open the Grafana dashboard at the http://localhost:3000/ URL. In the **Explore** view, select the **Loki** data source and filter by `service_name = inventory`. Expand the log entry for `Received response with status: 200`. The message appears as an `info` detected level log. The `io_openliberty_module` field is set to `SystemOut`.
 
@@ -472,24 +472,6 @@ Access the http://localhost:9081/inventory/systems/unknown URL again to generate
 
 image::log_logger_exception.png[Log by using the java.util.logging API,align="center"]
 {empty} +
-
-[role="code_command hotspot file=2", subs="quotes"]
-----
-#Replace the SystemResource class.#
-`system/src/main/java/io/openliberty/guides/system/SystemResource.java`
-----
-
-SystemResource.java
-[source, Java, linenums, role='code_column hide_tags=copyright']
-----
-include::finish/system/src/main/java/io/openliberty/guides/system/SystemResource.java[]
-----
-
-Update the [hotspot file=2]`SystemResource` class in the `system` service to use a simpler logging approach by using the [hotspot=log file=2]`info()` method. This ensures consistent logging across services.
-
-Return to the http://localhost:9081/inventory/systems/localhost URL and run the Loki query filter by `service_name = system` for this time. You see the log `Received request to fetch system properties.`
-
-To view logs from both services together, open the **Drilldown -> Logs** view in Grafana. You can now analyze logs across distributed systems in a single interface.
 
 By default, OpenTelemetry collects only message logs. For details on how to include additional sources, see https://openliberty.io/docs/latest/reference/feature/mpTelemetry-2.0.html#logs[Collect logs from a specified source^].
 

@@ -109,15 +109,15 @@ public class SystemClient implements AutoCloseable {
                 return "ERROR";
             }
         } catch (RuntimeException e) {
-            // tag::out5[]
+            // tag::out7[]
             System.err.println("Runtime exception while invoking system service: "
                     + e.getMessage());
-            // end::out5[]
+            // end::out7[]
         } catch (Exception e) {
-            // tag::out6[]
+            // tag::out8[]
             System.err.println("Unexpected exception while processing system service request: "
                     + e.getMessage());
-            // end::out6[]
+            // end::out8[]
         }
         return "ERROR";
     }
@@ -126,9 +126,9 @@ public class SystemClient implements AutoCloseable {
     public void close() {
         if (client != null) {
             client.close();
-            // tag::out7[]
+            // tag::out9[]
             System.out.println("SystemClient HTTP client closed.");
-            // end::out7[]
+            // end::out9[]
         }
     }
 }

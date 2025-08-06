@@ -13,8 +13,6 @@ package io.openliberty.guides.inventory;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 

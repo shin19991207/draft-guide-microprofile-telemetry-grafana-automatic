@@ -28,18 +28,4 @@ public class InventoryList {
     public int getTotal() {
         return systems.size();
     }
-
-    public SystemData getSystemByHostname(String hostname) {
-        for (SystemData system : systems) {
-            if (system.getHostname().equals(hostname)) {
-                return system;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public boolean contains(SystemData target) {
-        return systems.contains(target);
-    }
 }
