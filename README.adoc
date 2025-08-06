@@ -421,7 +421,7 @@ image::red_metrics.png[RED Metrics,align="center"]
 // =================================================================================================
 == Enhancing application logs
 
-When MicroProfile Telemetry is enabled, OpenTelemetry automatically collects logs from the Liberty message log stream. This includes logs written by the `java.util.logging` API at the `INFO` level or higher, as well as messages from the `System.out` standard output and `System.err` standard error streams. Liberty routes these standard streams into its unified logging framework, making them available for collection.
+When MicroProfile Telemetry is enabled, OpenTelemetry automatically collects logs from the Liberty message log stream. This includes logs written by the `java.util.logging` API at the `INFO` level or higher, as well as messages from the `System.out` standard output and `System.err` standard error streams.
 
 While `System.out` and `System.err` are useful for quick debugging, they are limited in production environments. These streams lack structure, consistent severity levels, and the contextual metadata that is critical for monitoring distributed systems. In contrast, the `java.util.logging` API produces structured logs with fine-grained control over log levels, built-in support for exceptions, and better integration with telemetry tools like Grafana.
 
@@ -444,7 +444,7 @@ Now access the http://localhost:9081/inventory/systems/unknown URL to simulate a
 image::log_system_out_println_exception.png[Log by using the System.out.println method,align="center"]
 {empty} +
 
-Although both `System.out` and `System.err` logs are collected, you can see that they do not provide structured metadata. You cannot filter logs by severity beyond the basic `info` and `warn` levels, nor can you separate stack traces or correlate logs with the context effectively.
+Although both `System.out` and `System.err` logs are collected, you can see that they do not provide structured metadata. You cannot filter logs by severity beyond the basic `info` and `warn` levels, nor can you separate stack traces or correlate logs with the context.
 
 To enable structured logging, update your application to use the `java.util.logging` API.
 
