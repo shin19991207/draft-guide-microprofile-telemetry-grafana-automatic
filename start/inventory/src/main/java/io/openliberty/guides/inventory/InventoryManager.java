@@ -34,25 +34,51 @@ public class InventoryManager {
 
     private List<SystemData> systems = Collections.synchronizedList(new ArrayList<>());
 
-    public Properties get(String hostname) {
+    public Properties getProperties(String hostname) {
         try (SystemClient client = new SystemClient()) {
             client.init(hostname, SYSTEM_PORT);
             return client.getProperties();
         }
     }
 
+    public String getHealth(String hostname) {
+        try (SystemClient client = new SystemClient()) {
+            client.init(hostname, SYSTEM_PORT);
+            return client.getHealth();
+        }
+    }
+
+    // tag::listMethod[]
     public InventoryList list() {
         return new InventoryList(systems);
     }
+    // end::listMethod[]
 
-    public void add(String hostname, Properties systemProps) {
+    // tag::addMethod[]
+    public void add(String host, Properties systemProps) {
         Properties props = new Properties();
         props.setProperty("os.name", systemProps.getProperty("os.name"));
         props.setProperty("user.name", systemProps.getProperty("user.name"));
-        SystemData system = new SystemData(hostname, props);
+        String health = getHealth(host);
+        SystemData system = new SystemData(host, props, health);
         if (!systems.contains(system)) {
             systems.add(system);
         }
+    }
+    // end::addMethod[]
+
+    public int refreshAllSystemsHealth() {
+        int updated = 0;
+        for (SystemData system : systems) {
+            String hostname = system.getHostname();
+            String currentHealth = system.getHealth();
+            String newHealth = getHealth(hostname);
+            if (!newHealth.equals(currentHealth)) {
+                system.setHealth(newHealth);
+                updated++;
+            }
+        }
+        return updated;
     }
 
     int clear() {

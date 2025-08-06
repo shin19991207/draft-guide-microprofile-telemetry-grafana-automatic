@@ -19,11 +19,7 @@
                   id="defaultHttpEndpoint" host="*" />
 
     <webApplication location="guide-microprofile-telemetry-inventory.war"
-                    contextRoot="/">
-        <!-- tag::thirdParty[] -->
-        <classloader apiTypeVisibility="+third-party"/>
-        <!-- end::thirdParty[] -->
-    </webApplication>
+                    contextRoot="/" />
 
     <logging consoleLogLevel="INFO" />
 

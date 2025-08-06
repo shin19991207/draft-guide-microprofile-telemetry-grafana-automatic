@@ -9,33 +9,37 @@
  * SPDX-License-Identifier: EPL-2.0
  *******************************************************************************/
 // end::copyright[]
- package io.openliberty.guides.inventory;
+package io.openliberty.guides.inventory;
 
 import java.util.Properties;
 
-import io.openliberty.guides.inventory.model.InventoryList;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import io.openliberty.guides.inventory.model.InventoryList;
+
 @RequestScoped
 @Path("/systems")
 public class InventoryResource {
 
+    // tag::manager[]
     @Inject
     private InventoryManager manager;
+    // end::manager[]
 
     @GET
     @Path("/{hostname}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPropertiesForHost(@PathParam("hostname") String hostname) {
-        Properties props = manager.get(hostname);
+        Properties props = manager.getProperties(hostname);
         if (props == null) {
             return Response.status(Response.Status.NOT_FOUND)
                            .entity("{ \"error\" : \"Unknown hostname or the system "
@@ -44,6 +48,19 @@ public class InventoryResource {
         }
         manager.add(hostname, props);
         return Response.ok(props).build();
+    }
+
+    @POST
+    @Path("/health/refresh")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response refreshAllSystemsHealth() {
+        int updated = manager.refreshAllSystemsHealth();
+        if (updated == 0) {
+            return Response.ok("{\"ok\": \"No systems needed refresh\"}")
+                           .build();
+        }
+        return Response.ok("{\"ok\": \"Health refresh completed for all systems\", \"updated\": " + updated + "}")
+                       .build();
     }
 
     @GET
@@ -57,11 +74,10 @@ public class InventoryResource {
     public Response clearContents() {
         int cleared = manager.clear();
         if (cleared == 0) {
-            return Response.status(Response.Status.NOT_MODIFIED)
-                    .build();
+            return Response.ok("{\"ok\": \"No systems to clear\"}")
+                           .build();
         }
-        return Response.status(Response.Status.OK)
-                .build();
+        return Response.ok("{\"ok\": \"Cleared all systems\", \"cleared\": " + cleared + "}")
+                       .build();
     }
 }
-

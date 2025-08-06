@@ -24,10 +24,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
-
 import io.openliberty.guides.inventory.model.InventoryList;
 
 @RequestScoped
@@ -39,49 +35,20 @@ public class InventoryResource {
     private InventoryManager manager;
     // end::manager[]
 
-    // tag::tracer[]
-    @Inject
-    private Tracer tracer;
-    // end::tracer[]
-
     @GET
     @Path("/{hostname}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPropertiesForHost(@PathParam("hostname") String hostname) {
-        // tag::getPropertiesSpan[]
-        Span getPropertiesSpan = tracer.spanBuilder("GettingProperties").startSpan();
-        // end::getPropertiesSpan[]
-        // tag::try[]
-        Properties props = null;
-        // tag::scope[]
-        try (Scope scope = getPropertiesSpan.makeCurrent()) {
-        // end::scope[]
-            // tag::getSystem[]
-            props = manager.getProperties(hostname);
-            // end::getSystem[]
-            if (props == null) {
-                // tag::addEvent1[]
-                getPropertiesSpan.addEvent("Cannot get properties");
-                // end::addEvent1[]
-                return Response.status(Response.Status.NOT_FOUND)
-                         .entity("{ \"error\" : \"Unknown hostname or the system "
-                               + "service may not be running on " + hostname + "\" }")
-                         .build();
-            }
-            // tag::addEvent2[]
-            getPropertiesSpan.addEvent("Received properties");
-            // end::addEvent2[]
-            manager.add(hostname, props);
-        // tag::finally[]
-        } finally {
-            // tag::end[]
-            getPropertiesSpan.end();
-            // end::end[]
+        String health = manager.getHealth(hostname);
+        if (health == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{ \"error\" : \"Unknown hostname or the system "
+                            + "service may not be running on " + hostname + "\" }")
+                           .build();
         }
-        // end::finally[]
-        // end::try[]
+        Properties props = manager.getProperties(hostname);
+        manager.addOrUpdate(hostname, props, health);
         return Response.ok(props).build();
-
     }
 
     @POST
@@ -89,7 +56,6 @@ public class InventoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response refreshAllSystemsHealth() {
         int updated = manager.refreshAllSystemsHealth();
-
         if (updated == 0) {
             return Response.ok("{\"ok\": \"No systems needed refresh\"}")
                            .build();
@@ -108,7 +74,6 @@ public class InventoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response clearContents() {
         int cleared = manager.clear();
-
         if (cleared == 0) {
             return Response.ok("{\"ok\": \"No systems to clear\"}")
                            .build();
@@ -117,4 +82,3 @@ public class InventoryResource {
                        .build();
     }
 }
-

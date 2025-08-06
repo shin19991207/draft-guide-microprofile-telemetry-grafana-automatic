@@ -11,12 +11,12 @@
 // end::copyright[]
 package io.openliberty.guides.inventory.model;
 
+import java.util.Objects;
 import java.util.Properties;
 
 public class SystemData {
-
     private final String hostname;
-    private final Properties properties;
+    private Properties properties;
     private String health;
 
     public SystemData(String hostname, Properties properties, String health) {
@@ -37,6 +37,10 @@ public class SystemData {
         return health;
     }
 
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+
     public void setHealth(String health) {
         this.health = health;
     }
@@ -48,5 +52,9 @@ public class SystemData {
         }
         return false;
     }
-}
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(hostname);
+    }
+}

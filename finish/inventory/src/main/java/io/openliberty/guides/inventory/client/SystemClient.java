@@ -89,10 +89,15 @@ public class SystemClient implements AutoCloseable {
                 // end::log4[]
             }
         } catch (RuntimeException e) {
-            // tag::log5[]
+            // tag::out5[]
             logger.log(Level.SEVERE,
                 "Runtime exception while invoking system service", e);
-            // end::log5[]
+            // end::out5[]
+        } catch (Exception e) {
+            // tag::out6[]
+            logger.log(Level.SEVERE,
+                "Unexpected exception while processing system service request", e);
+            // end::out6[]
         }
         return null;
     }
@@ -100,7 +105,7 @@ public class SystemClient implements AutoCloseable {
     public String getHealth() {
         String url = buildUrl(SYSTEM_HEALTH);
         Builder builder = buildClientBuilder(url);
-        if (builder == null) return "ERROR";
+        if (builder == null) return null;
         try {
             Response response = builder.get();
             int statusCode = response.getStatus();
@@ -111,13 +116,16 @@ public class SystemClient implements AutoCloseable {
             } else {
                 return "ERROR";
             }
+        } catch (RuntimeException e) {
+            logger.log(Level.SEVERE,
+                "Runtime exception while invoking system service", e);
         } catch (Exception e) {
             // tag::log5[]
             logger.log(Level.SEVERE,
                 "Exception while invoking system health endpoint", e);
             // end::log5[]
         }
-        return "ERROR";
+        return null;
     }
 
     @Override

@@ -12,21 +12,15 @@
 package io.openliberty.guides.inventory;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.instrumentation.annotations.SpanAttribute;
-import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 import io.openliberty.guides.inventory.client.SystemClient;
 import io.openliberty.guides.inventory.model.InventoryList;
@@ -39,31 +33,7 @@ public class InventoryManager {
     @ConfigProperty(name = "system.http.port")
     private int SYSTEM_PORT;
 
-    private List<SystemData> systems = Collections.synchronizedList(new ArrayList<>());
-
-    @Inject
-    Meter meter;
-
-    private LongCounter listCounter;
-    private DoubleHistogram addHistogram;
-
-    @PostConstruct
-    public void init() {
-        listCounter = meter.counterBuilder("inventory.list.count")
-            .setDescription("Number of times the inventory list is requested")
-            .setUnit("1")
-            .build();
-
-        addHistogram = meter.histogramBuilder("inventory.add.duration")
-            .setDescription("Time taken to add a system to the inventory")
-            .setUnit("ns")
-            .build();
-
-        meter.gaugeBuilder("inventory.size")
-            .setDescription("Number of systems in the inventory")
-            .setUnit("1")
-            .buildWithCallback(g -> g.record((double) systems.size()));
-    }
+    private Map<String, SystemData> systems = new ConcurrentHashMap<>();
 
     public Properties getProperties(String hostname) {
         try (SystemClient client = new SystemClient()) {
@@ -79,47 +49,28 @@ public class InventoryManager {
         }
     }
 
-    // tag::listWithSpan[]
-    @WithSpan
-    // end::listWithSpan[]
-    // tag::listMethod[]
     public InventoryList list() {
-        listCounter.add(1);
-        return new InventoryList(systems);
+        return new InventoryList(new ArrayList<>(systems.values()));
     }
-    // end::listMethod[]
 
-    // tag::addWithSpan[]
-    @WithSpan("Inventory Manager Add")
-    // end::addWithSpan[]
-    // tag::addMethod[]
-    // tag::spanAttribute[]
-    public void add(@SpanAttribute("hostname") String host, Properties systemProps) {
-    // end::spanAttribute[]
-        long start = System.nanoTime();
-        try {
-            Properties props = new Properties();
-            props.setProperty("os.name", systemProps.getProperty("os.name"));
-            props.setProperty("user.name", systemProps.getProperty("user.name"));
-            String health = getHealth(host);
-            SystemData system = new SystemData(host, props, health);
-            if (!systems.contains(system)) {
-                systems.add(system);
-            }
-        } finally {
-            long duration = System.nanoTime() - start;
-            addHistogram.record((double) duration);
+    public void addOrUpdate(String host, Properties systemProps, String health) {
+        SystemData system = systems.get(host);
+        Properties props = new Properties();
+        props.setProperty("os.name", systemProps.getProperty("os.name"));
+        props.setProperty("user.name", systemProps.getProperty("user.name"));
+        if (system == null) {
+            systems.put(host, new SystemData(host, props, health));
+        } else {
+            system.setHealth(health);
         }
     }
-    // end::addMethod[]
 
     public int refreshAllSystemsHealth() {
         int updated = 0;
-        for (SystemData system : systems) {
+        for (SystemData system : systems.values()) {
             String hostname = system.getHostname();
-            String currentHealth = system.getHealth();
             String newHealth = getHealth(hostname);
-            if (!newHealth.equals(currentHealth)) {
+            if (!newHealth.equals(system.getHealth())) {
                 system.setHealth(newHealth);
                 updated++;
             }
