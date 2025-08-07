@@ -65,7 +65,7 @@ Start a container from the https://hub.docker.com/r/grafana/otel-lgtm[`grafana/o
 
 [role="command"]
 ----
-docker run -p 3000:3000 -p 4317:4317 -p 4318:4318 --rm -ti grafana/otel-lgtm:0.9.3
+docker run -p 3000:3000 -p 4317:4317 -p 4318:4318 --rm -ti grafana/otel-lgtm
 ----
 
 It may take a minute for the container to start. After you see the following message, your observability stack is ready:
