@@ -116,9 +116,6 @@ public class SystemClient implements AutoCloseable {
             } else {
                 return "ERROR";
             }
-        } catch (RuntimeException e) {
-            logger.log(Level.SEVERE,
-                "Runtime exception while invoking system service", e);
         } catch (Exception e) {
             // tag::log5[]
             logger.log(Level.SEVERE,

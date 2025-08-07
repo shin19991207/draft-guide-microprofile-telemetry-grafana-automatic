@@ -40,7 +40,7 @@ public class InventoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPropertiesForHost(@PathParam("hostname") String hostname) {
         String health = manager.getHealth(hostname);
-        if (health == null) {
+        if (health == "ERROR") {
             return Response.status(Response.Status.NOT_FOUND)
                            .entity("{ \"error\" : \"Unknown hostname or the system "
                             + "service may not be running on " + hostname + "\" }")
