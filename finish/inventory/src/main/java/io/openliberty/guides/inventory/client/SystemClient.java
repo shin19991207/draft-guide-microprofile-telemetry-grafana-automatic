@@ -105,7 +105,7 @@ public class SystemClient implements AutoCloseable {
     public String getHealth() {
         String url = buildUrl(SYSTEM_HEALTH);
         Builder builder = buildClientBuilder(url);
-        if (builder == null) return null;
+        if (builder == null) return "ERROR";
         try {
             Response response = builder.get();
             int statusCode = response.getStatus();
@@ -119,10 +119,10 @@ public class SystemClient implements AutoCloseable {
         } catch (Exception e) {
             // tag::log5[]
             logger.log(Level.SEVERE,
-                "Exception while invoking system health endpoint", e);
+                "Unexpected exception while invoking system health endpoint", e);
             // end::log5[]
         }
-        return null;
+        return "ERROR";
     }
 
     @Override
