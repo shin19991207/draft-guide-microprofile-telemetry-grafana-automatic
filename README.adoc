@@ -61,7 +61,7 @@ image::architecture_diagram.png[Application architecture,align="center"]
 
 Before you begin, ensure that Docker is installed and running on your system. For installation instructions, see the https://docs.docker.com/get-started/get-docker/[official Docker documentation^].
 
-Start a container from the https://hub.docker.com/r/grafana/otel-lgtm[`grafana/otel-lgtm`^] Docker image by running the following command:
+Start a container from the https://hub.docker.com/r/grafana/otel-lgtm[grafana/otel-lgtm^] Docker image by running the following command:
 
 [role="command"]
 ----
