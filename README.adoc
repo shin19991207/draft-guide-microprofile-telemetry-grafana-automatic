@@ -465,6 +465,7 @@ Because you are running the services in dev mode, the changes that you made are 
 Return to the http://localhost:9081/inventory/systems/localhost URL and re-run the Loki query in Grafana. This time, the log is more structured. The `io_openliberty_module` field contains the actual logger name, making it easier to trace log origins.
 
 image::log_logger_ok.png[Log by using the java.util.logging API,align="center"]
+{empty} +
 
 Access the http://localhost:9081/inventory/systems/unknown URL again to generate an exception and re-run the Loki query in Grafana. The resulting log indicates the `error` severity by the `detected_level` field, the structured exception stack by the `exception_stacktrace` field, and the `jakarta.ws.rs.ProcessingException` exception by the `exception_type` field.
 
