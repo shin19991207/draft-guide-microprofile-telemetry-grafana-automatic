@@ -39,15 +39,20 @@ public class InventoryResource {
     @Path("/{hostname}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPropertiesForHost(@PathParam("hostname") String hostname) {
+        Properties props = null;
         String health = manager.getHealth(hostname);
-        if (health == "ERROR") {
+        if (health.equals("ERROR")) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{ \"error\" : \"Unknown hostname or the system "
-                            + "service may not be running on " + hostname + "\" }")
-                           .build();
+                        .entity("{ \"error\" : \"Unknown hostname or the system "
+                        + "service may not be running on " + hostname + "\" }")
+                        .build();
         }
-        Properties props = manager.getProperties(hostname);
-        manager.addOrUpdate(hostname, props, health);
+        props = manager.getProperties(hostname);
+        if (!manager.contains(hostname)) {
+            manager.add(hostname, props, health);
+        } else {
+            manager.update(hostname, health);
+        }
         return Response.ok(props).build();
     }
 

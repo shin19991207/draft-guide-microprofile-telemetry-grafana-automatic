@@ -2,7 +2,7 @@
 
     <featureManager>
         <platform>jakartaee-10.0</platform>
-        <platform>microprofile-7.0</platform>
+        <platform>microprofile-7.1</platform>
         <feature>cdi</feature>
         <feature>jsonb</feature>
         <feature>jsonp</feature>
@@ -18,7 +18,7 @@
                   httpsPort="${https.port}"
                   id="defaultHttpEndpoint" host="*" />
 
-    <webApplication location="guide-microprofile-telemetry-inventory.war"
+    <webApplication location="guide-microprofile-telemetry-grafana-automatic-inventory.war"
                     contextRoot="/" />
 
     <logging consoleLogLevel="INFO" />

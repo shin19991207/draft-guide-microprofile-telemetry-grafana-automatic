@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.openliberty.guides.inventory.client.SystemClient;
@@ -32,6 +33,10 @@ public class InventoryManager {
     private int SYSTEM_PORT;
 
     private Map<String, SystemData> systems = new ConcurrentHashMap<>();
+
+    public boolean contains(String host) {
+        return systems.containsKey(host);
+    }
 
     public Properties getProperties(String hostname) {
         try (SystemClient client = new SystemClient()) {
@@ -51,16 +56,17 @@ public class InventoryManager {
         return new InventoryList(new ArrayList<>(systems.values()));
     }
 
-    public void addOrUpdate(String host, Properties systemProps, String health) {
-        SystemData system = systems.get(host);
+    public void add(String host, Properties systemProps, String health) {
         Properties props = new Properties();
         props.setProperty("os.name", systemProps.getProperty("os.name"));
         props.setProperty("user.name", systemProps.getProperty("user.name"));
-        if (system == null) {
-            systems.put(host, new SystemData(host, props, health));
-        } else {
-            system.setHealth(health);
-        }
+
+        systems.put(host, new SystemData(host, props, health));
+    }
+
+    public void update(String host, String health) {
+        SystemData system = systems.get(host);
+        system.setHealth(health);
     }
 
     public int refreshAllSystemsHealth() {
