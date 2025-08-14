@@ -190,8 +190,6 @@ This graph helps visualize the request flow across services and identify any lat
 
 You can click on a **Log** icon beside a span to see the logs associated with it.
 
-image::inventory_default_spans_logs.png[`GET /inventory/systems/{hostname}` logs,align="center"]
-
 You can also follow the following steps to explore the application and runtimes logs from both services:
 
 1. Open the **Drilldown -> Logs** view from the left-hand menu. This view displays an overview of time series and log visualizations for all services sending logs to Loki.
