@@ -117,10 +117,10 @@ public class SystemClient implements AutoCloseable {
                 return "ERROR";
             }
         } catch (Exception e) {
-            // tag::log5[]
+            // tag::log7[]
             logger.log(Level.SEVERE,
                 "Unexpected exception while invoking system health endpoint", e);
-            // end::log5[]
+            // end::log7[]
         }
         return "ERROR";
     }
